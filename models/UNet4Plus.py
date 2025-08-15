@@ -100,7 +100,7 @@ def UNet4Plus_w_DeepSupv(num_classes, input_height, input_width, num_filters):
     outputs = Conv2D(num_classes, kernel_size=3, padding="same", activation="sigmoid",
                      kernel_initializer="he_normal")(outputs)
 
-    model = Model(inputs=inputs, outputs=outputs, name="U-Net4+ with deep supervision")
+    model = Model(inputs=inputs, outputs=outputs, name="UNet4Plus_w_DeepSupv")
 
     return model
 
@@ -174,6 +174,6 @@ def UNet4Plus_wo_DeepSupv(num_classes, input_height, input_width, num_filters):
 
     outputs = Conv2D(num_classes, kernel_size=3, padding="same", activation="sigmoid", kernel_initializer="he_normal")(d1)
 
-    model = Model(inputs=inputs, outputs=outputs, name="U-Net4+ without deep supervision")
+    model = Model(inputs=inputs, outputs=outputs, name="UNet4Plus_wo_DeepSupv")
 
     return model

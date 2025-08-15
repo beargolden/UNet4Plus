@@ -39,7 +39,7 @@ for idx in range(len(img_list)):
     img_patch_locations, img_patches = get_patches(img, TILE_SIZE, TILE_SIZE)
     msk_patch_locations, msk_patches = get_patches(msk, TILE_SIZE, TILE_SIZE)
 
-    print("\t{} patches extracted...".format(len(img_patches)))
+    print("\t{} patches extracted in {}".format(len(img_patches), img_list[idx]))
     for idy in range(len(img_patches)):
         total_img_patches.append(img_patches[idy])
         total_msk_patches.append(msk_patches[idy])

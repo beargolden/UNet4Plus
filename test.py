@@ -1,8 +1,9 @@
 # Test deep neural network model
-
+import os
 import time
 
 import cv2
+from keras.optimizers import *
 from tqdm import *
 
 from losses import *
@@ -27,11 +28,11 @@ model = build_model(NETWORK_MODEL.lower(),
                     input_width=TILE_SIZE,
                     num_filters=NUM_FILTERS)
 
-model.compile(optimizer="Adam", loss=build_loss(LOSS_FUNCTION.lower()), metrics=["accuracy"])
+model.compile(optimizer=Adam(), loss=build_loss(LOSS_FUNCTION.lower()), metrics=["accuracy"])
 
-model_weights_dir = "./weights"
-model_name = ""
-model.load_weights(os.path.join(model_weights_dir, model_name))
+model_name = "..."
+print("Loading weights: {}".format(model_name))
+model.load_weights(model_name)
 
 img_list = sorted(os.listdir(img_in_dir))
 start_time = time.time()
@@ -48,7 +49,7 @@ for idx in trange(len(img_list)):
     predictions = model.predict(patches, batch_size=BATCH_SIZE, verbose=2)
     estimated = stitch_together(locations, predictions[:, :, :, 0], tuple(img.shape[0:2]), TILE_SIZE, TILE_SIZE)
     result = np.where(estimated >= 0.5, 1, 0)
-    cv2.imwrite(os.path.join(img_out_dir, fname + "-XW_" + NETWORK_MODEL + "_" + LOSS_FUNCTION + ".tiff"), result * 255)
+    cv2.imwrite(os.path.join(img_out_dir, fname + "-XW_" + NETWORK_MODEL + "_" + LOSS_FUNCTION + ".png"), result * 255)
 
 print("Total running time: %f sec." % (time.time() - start_time))
 print("Finished!")

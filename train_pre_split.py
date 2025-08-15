@@ -1,11 +1,13 @@
 # Train deep neural network model
 # Training and validation datasets are already pre-split
-
+import os
 import pickle
 import random
 from datetime import datetime
 
+from keras import backend as K
 from keras.callbacks import *
+from keras.optimizers import *
 from keras.preprocessing.image import *
 
 from global_variables import *
@@ -18,7 +20,7 @@ for _ in range(1):
     K.clear_session()
 
     data_root = os.path.join("./datasets", DATASET_NAME, "output_train_0.8_val_0.2_seed_3376")
-    print("Training {}, using {} model with {} loss ...".format(DATASET_NAME, NETWORK_MODEL, LOSS_FUNCTION))
+    print("Training {}, using {} model with {} loss".format(DATASET_NAME, NETWORK_MODEL, LOSS_FUNCTION))
 
     train_val_split_str = data_root[data_root.rindex("/") + 8:data_root.rindex("/") + 25]  # extract substring: train_0.8_val_0.2
 
@@ -58,7 +60,7 @@ for _ in range(1):
     val_img_datagen = ImageDataGenerator(rescale=1.0 / 255.0)
     val_msk_datagen = ImageDataGenerator(rescale=1.0 / 255.0)
 
-    val_img_generator = val_img_datagen.flow_from_directory(
+    valid_img_generator = val_img_datagen.flow_from_directory(
         data_val_dir,
         target_size=(TILE_SIZE, TILE_SIZE),
         color_mode="grayscale",
@@ -69,7 +71,7 @@ for _ in range(1):
         seed=seed2,
     )
 
-    val_msk_generator = val_msk_datagen.flow_from_directory(
+    valid_msk_generator = val_msk_datagen.flow_from_directory(
         data_val_dir,
         target_size=(TILE_SIZE, TILE_SIZE),
         color_mode="grayscale",
@@ -81,7 +83,7 @@ for _ in range(1):
     )
 
     train_generator = zip(train_img_generator, train_msk_generator)
-    val_generator = zip(val_img_generator, val_msk_generator)
+    valid_generator = zip(valid_img_generator, valid_msk_generator)
 
     model = build_model(NETWORK_MODEL.lower(),
                         num_classes=1,
@@ -89,9 +91,11 @@ for _ in range(1):
                         input_width=TILE_SIZE,
                         num_filters=NUM_FILTERS)
 
-    model.compile(optimizer="Adam", loss=build_loss(LOSS_FUNCTION.lower()), metrics=["accuracy"])
+    model.compile(optimizer=Adam(), loss=build_loss(LOSS_FUNCTION.lower()), metrics=["accuracy"])
 
-    # model.load_weights("...")
+    # model_name = "..."
+    # print("Loading weights: {}".format(model_name))
+    # model.load_weights(model_name)
     # model.summary()
 
     model_weights_root = "./weights-" + DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() + "-" + LOSS_FUNCTION.lower() + "-" + train_val_split_str + "-" + str(
@@ -127,8 +131,8 @@ for _ in range(1):
                                   epochs=NUM_EPOCHS,
                                   verbose=2,
                                   steps_per_epoch=len(train_img_generator),
-                                  validation_data=val_generator,
-                                  validation_steps=len(val_img_generator),
+                                  validation_data=valid_generator,
+                                  validation_steps=len(valid_img_generator),
                                   callbacks=[check_point, reduce_lr, early_stop])
 
     with open(os.path.join(model_weights_root,

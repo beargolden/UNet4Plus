@@ -80,6 +80,6 @@ def UNet(num_classes, input_height, input_width, num_filters):
     outputs = Conv2D(num_classes, kernel_size=3, padding="same", activation="sigmoid",
                      kernel_initializer="he_normal")(d1)
 
-    model = Model(inputs=inputs, outputs=outputs, name="U-Net")
+    model = Model(inputs=inputs, outputs=outputs, name="UNet")
 
     return model

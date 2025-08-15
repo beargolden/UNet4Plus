@@ -1,14 +1,17 @@
 # Train deep neural network model
 # Training and validation datasets will be automatically split by ImageDataGenerator
-
+import os
 import pickle
 import random
 from datetime import datetime
 
+from keras import backend as K
 from keras.callbacks import *
+from keras.optimizers import *
 from keras.preprocessing.image import *
 
 from global_variables import *
+from losses import *
 from models import *
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -17,13 +20,13 @@ for _ in range(1):
     K.clear_session()
 
     data_root = os.path.join("./datasets", DATASET_NAME)
-    print("Training dataset: {}, using network model: {}".format(DATASET_NAME, NETWORK_MODEL))
+    print("Training {}, using {} model with {} loss".format(DATASET_NAME, NETWORK_MODEL, LOSS_FUNCTION))
 
     data_train_path = os.path.join(data_root, "train")
 
     random.seed()
     seed = round(random.random() * 10000)
-    print("Random seed1: {}".format(seed))
+    print("Random seed: {}".format(seed))
 
     img_datagen = ImageDataGenerator(rescale=1.0 / 255.0, validation_split=0.2)
     msk_datagen = ImageDataGenerator(rescale=1.0 / 255.0, validation_split=0.2)
@@ -79,26 +82,30 @@ for _ in range(1):
     train_generator = zip(train_img_generator, train_msk_generator)
     valid_generator = zip(valid_img_generator, valid_msk_generator)
 
-    model = build_model(NETWORK_MODEL,
+    model = build_model(NETWORK_MODEL.lower(),
                         num_classes=1,
                         input_height=TILE_SIZE,
                         input_width=TILE_SIZE,
                         num_filters=NUM_FILTERS)
 
-    model.compile(optimizer=Adam(), loss=["binary_crossentropy"], metrics=["accuracy"])
+    model.compile(optimizer=Adam(), loss=build_loss(LOSS_FUNCTION.lower()), metrics=["accuracy"])
 
-    # model.load_weights("...")
+    # model_name = "..."
+    # print("Loading weights: {}".format(model_name))
+    # model.load_weights(model_name)
     # model.summary()
 
-    model_weights_root = "./weights-" + DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() + "-" + str(datetime.timestamp(datetime.now()))
+    model_weights_root = "./weights-" + DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() + "-" + LOSS_FUNCTION.lower() + "-" + str(
+        datetime.timestamp(datetime.now()))
     if not os.path.exists(model_weights_root):
         os.makedirs(model_weights_root)
 
-    check_point = ModelCheckpoint(os.path.join(model_weights_root, DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() +
+    check_point = ModelCheckpoint(os.path.join(model_weights_root,
+                                               DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() + "-" + LOSS_FUNCTION.lower() +
                                                "-ps_" + str(TILE_SIZE) + "x" + str(TILE_SIZE) +
                                                "-ch_" + str(NUM_FILTERS) +
                                                "-bs_" + str(BATCH_SIZE) +
-                                               "-val_loss_{val_loss:.5f}-val_accuracy_{val_accuracy:.5f}.hdf5"),
+                                               "-val_loss_{val_loss}-val_accuracy_{val_accuracy}.hdf5"),
                                   monitor="val_loss",
                                   verbose=1,
                                   save_best_only=True,
@@ -125,11 +132,12 @@ for _ in range(1):
                                   validation_steps=len(valid_img_generator),
                                   callbacks=[check_point, reduce_lr, early_stop])
 
-    with open(os.path.join(model_weights_root, DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() +
-                                               "-ps_" + str(TILE_SIZE) + "x" + str(TILE_SIZE) +
-                                               "-ch_" + str(NUM_FILTERS) +
-                                               "-bs_" + str(BATCH_SIZE) +
-                                               "-" + str(datetime.timestamp(datetime.now())) + ".history"), "wb") as df:
+    with open(os.path.join(model_weights_root,
+                           DATASET_NAME.lower() + "-" + NETWORK_MODEL.lower() + "-" + LOSS_FUNCTION.lower() +
+                           "-ps_" + str(TILE_SIZE) + "x" + str(TILE_SIZE) +
+                           "-ch_" + str(NUM_FILTERS) +
+                           "-bs_" + str(BATCH_SIZE) +
+                           "-" + str(datetime.timestamp(datetime.now())) + ".history"), "wb") as df:
         pickle.dump(history.history, df)
 
     df.close()

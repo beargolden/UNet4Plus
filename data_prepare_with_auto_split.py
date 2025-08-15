@@ -1,4 +1,4 @@
-# Prepare dataset for training (with auto train-val split)
+# Prepare dataset for training and validation (with auto train-valid split)
 
 import os
 import random
@@ -29,7 +29,7 @@ for idx in range(len(img_list)):
 
     print("Now processing image:", os.path.join(data_root, img_list[idx]))
     fname, fext = os.path.splitext(img_list[idx])
-    img = cv2.imread(os.path.join(data_root, img_list[idx]), cv2.IMREAD_COLOR)
+    img = cv2.imread(os.path.join(data_root, img_list[idx]), cv2.IMREAD_GRAYSCALE)
     msk = cv2.imread(os.path.join(data_root, "GT", fname + "_GT.bmp"), cv2.IMREAD_GRAYSCALE)
 
     # extract the patches from the original document images and the corresponding ground truths
@@ -42,11 +42,9 @@ for idx in range(len(img_list)):
         cv2.imwrite(os.path.join(data_train_path, "labels", fname + "_" + str(idy) + ".bmp"), msk_patches[idy])
 
 if validation_split:
-    print("Prepare training ({:.1f}) and validation ({:.1f}) subsets with random seed1: {}".format(1 - validation_split, validation_split, seed))
+    print("Prepare training ({:.1f}) and validation ({:.1f}) subsets with random seed: {}".format(1 - validation_split, validation_split, seed))
     splitfolders.ratio(data_train_path,
-                       output=os.path.join(data_root,
-                                           DATASET_NAME.lower() + "_train_{:.1f}_val_{:.1f}_seed_{}".format(1 - validation_split, validation_split,
-                                                                                                            seed)),
+                       output=os.path.join(data_root, DATASET_NAME.lower() + "_train_{:.1f}_valid_{:.1f}_seed_{}".format(1 - validation_split, validation_split, seed)),
                        seed=seed,
                        ratio=(1 - validation_split, validation_split),
                        group_prefix=None,
