@@ -1,5 +1,12 @@
+<div align="center">
+
 # UNet4Plus
+
 UNet4+: A Full-Scale and Densely-Connected UNet Architecture for Historical Document Image Binarization
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=beargolden/UNet4Plus)
+
+</div>
 
 <img src="assets/images/unet.png" width="250" title="UNet" alt="UNet"> <img src="assets/images/unet_e.png" width="250" title="UNet^e" alt="UNet^e"> <img src="assets/images/unet1plus.png" width="250" title="UNet+" alt="UNet+"> <img src="assets/images/unet2plus.png" width="250" title="UNet++" alt="UNet++"> <img src="assets/images/unet3plus.png" width="250" title="UNet3+" alt="UNet3+"> <img src="assets/images/unet4plus.png" width="250" title="UNet4+" alt="UNet4+">
 
